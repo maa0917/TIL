@@ -2,7 +2,7 @@ package member
 
 import "slices"
 
-// 早期continueを使うことで、if文のネストを減らすことができる
+// ループ処理中の条件分岐ネストを減らすために、早期continueや早期breakを使う
 
 type StateType string
 
@@ -12,9 +12,11 @@ const (
 )
 
 type Member struct {
-	Name     string
-	HitPoint int
-	States   []StateType
+	Name                string
+	HitPoint            int
+	States              []StateType
+	AttackPower         int
+	TeamAttackSucceeded bool
 }
 
 func (m *Member) ContainsState(state StateType) bool {
@@ -42,9 +44,17 @@ func (m *Member) RemoveState(state StateType) {
 	// }
 }
 
-func main() {
+func (m *Member) HasTeamAttackSucceeded() bool {
+	return m.TeamAttackSucceeded
+}
+
+// 早期continueを使うことで、if文のネストを減らすことができる
+func poison() {
 	members := []Member{
 		{Name: "勇者", HitPoint: 10},
+		{Name: "戦士", HitPoint: 20},
+		{Name: "僧侶", HitPoint: 30},
+		{Name: "魔法使い", HitPoint: 40},
 	}
 	for _, member := range members {
 		if member.HitPoint == 0 {
@@ -62,5 +72,26 @@ func main() {
 		member.HitPoint = 0
 		member.AddState(Dead)
 		member.RemoveState(Poison)
+	}
+}
+
+// 早期breakを使うことで、if文のネストを減らすことができる
+func totalDamage() {
+	members := []Member{
+		{Name: "勇者", AttackPower: 10},
+		{Name: "戦士", AttackPower: 20},
+		{Name: "僧侶", AttackPower: 30},
+		{Name: "魔法使い", AttackPower: 40},
+	}
+	totalDamage := 0
+	for _, member := range members {
+		if !member.HasTeamAttackSucceeded() {
+			break
+		}
+		damage := float64(member.AttackPower) * 1.1
+		if damage < 30 {
+			break
+		}
+		totalDamage += int(damage)
 	}
 }
